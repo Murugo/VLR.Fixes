@@ -1,0 +1,3 @@
+[submodule "External/Hooking.Patterns"]
+	path = External/Hooking.Patterns
+	url = https://github.com/ThirteenAG/Hooking.Patterns.git
