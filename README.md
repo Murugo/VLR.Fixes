@@ -9,7 +9,7 @@ An unofficial patch for the [Steam release](https://store.steampowered.com/app/4
 
 ## Installation
 
-* Download the latest .ZIP file from the Releases tab.
+* Download the latest .ZIP file from the [Releases](https://github.com/Murugo/VLR.Fixes/releases) tab.
 * Locate the installation folder for Zero Escape: The Nonary Games.
   * Right-click the game in your Steam library > Properties > Installed Files > Browse...
 * Extract the .ZIP file and place these files in the same folder as `ze2.exe`:
