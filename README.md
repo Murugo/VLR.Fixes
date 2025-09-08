@@ -4,8 +4,7 @@ An unofficial patch for the [Steam release](https://store.steampowered.com/app/4
 
 ![Lip animation fix before-and-after](img/LipAnimFix.png "Clover is finally allowed to have other emotions.")
 
-* *Lip Animation Fix*: Fixes a bug where characters will maintain their default (neutral) mouth pose after talking, regardless of the body pose being used. Also known as the infamous Clover smiling bug.
-  * Note that this fix will have a noticeable impact on *all* characters.
+* *Lip Animation Fix*: Fixes a bug where characters will maintain their default (neutral) mouth pose after talking. Also known as the infamous Clover smiling bug.
 
 ## Installation
 
