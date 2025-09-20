@@ -42,6 +42,9 @@
     <ClInclude Include="..\External\Hooking.Patterns\Hooking.Patterns.h">
       <Filter>External\Hooking.Patterns</Filter>
     </ClInclude>
+    <ClInclude Include="FileHook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -61,6 +64,9 @@
     </ClCompile>
     <ClCompile Include="..\External\Hooking.Patterns\Hooking.Patterns.cpp">
       <Filter>External\Hooking.Patterns</Filter>
+    </ClCompile>
+    <ClCompile Include="FileHook.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

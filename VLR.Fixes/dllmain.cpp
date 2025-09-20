@@ -2,6 +2,7 @@
 
 #include <filesystem>
 
+#include "FileHook.h"
 #include "LipAnim.h"
 #include "Logging.h"
 #include "version.h"
@@ -14,17 +15,35 @@ bool ValidateExe()
     return std::filesystem::path(proc_path).filename().string() == "ze2.exe";
 }
 
+bool ApplyPatches()
+{
+    bool success = true;
+    if (!vlr::PatchCustomGameFiles())
+    {
+        LOG(LOG_ERROR) << "Failed to apply game file hooks!";
+    }
+    if (!vlr::PatchLipAnimationFix())
+    {
+        LOG(LOG_ERROR) << "Failed to apply lip animation fix!";
+        success = false;
+    }
+    return success;
+}
+
 void Init()
 {
     if (!ValidateExe()) return;
 
     LOG(LOG_INFO) << "Virtue's Last Reward Fixes " << VER_FILE_VERSION_STR;
 
-    if (!vlr::PatchLipAnimationFix())
+    if (ApplyPatches())
     {
-        LOG(LOG_ERROR) << "Failed to apply lip animation fix!";
+        LOG(LOG_INFO) << "Applied all patches successfully.";
     }
-    LOG(LOG_INFO) << "Applied all patches successfully.";
+    else
+    {
+        LOG(LOG_INFO) << "One or more patches failed to apply.";
+    }
 }
 
 extern "C"

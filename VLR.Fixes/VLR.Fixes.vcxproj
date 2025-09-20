@@ -71,7 +71,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
     </ClCompile>
@@ -85,6 +85,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\External\Hooking.Patterns\Hooking.Patterns.h" />
+    <ClInclude Include="FileHook.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="LipAnim.h" />
     <ClInclude Include="Logging.h" />
@@ -97,6 +98,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="FileHook.cpp" />
     <ClCompile Include="LipAnim.cpp" />
     <ClCompile Include="Logging.cpp" />
     <ClCompile Include="MemoryUtils.cpp" />
