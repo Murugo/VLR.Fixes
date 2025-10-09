@@ -87,8 +87,6 @@ __declspec(naked) void __stdcall LoadGameFileASM()
         test ecx, ecx
         jz ExitASM
 
-        // jmp ExitASM  // TODO: Remove
-
         lea ecx, dword ptr ds : [ebp - 0x18]
         push ecx
         push dword ptr ds : [eax]

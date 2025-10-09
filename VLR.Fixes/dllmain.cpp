@@ -5,7 +5,8 @@
 #include "FileHook.h"
 #include "LipAnim.h"
 #include "Logging.h"
-#include "version.h"
+#include "LuaHook.h"
+#include "resource.h"
 
 // Returns whether the current process is named "ze2.exe" (to avoid patching "ze1.exe" by mistake).
 bool ValidateExe()
@@ -20,7 +21,11 @@ bool ApplyPatches()
     bool success = true;
     if (!vlr::PatchCustomGameFiles())
     {
-        LOG(LOG_ERROR) << "Failed to apply game file hooks!";
+        LOG(LOG_ERROR) << "Failed to apply game file hook!";
+    }
+    if (!vlr::PatchCustomLuaScripts())
+    {
+        LOG(LOG_ERROR) << "Failed to apply Lua script hook!";
     }
     if (!vlr::PatchLipAnimationFix())
     {

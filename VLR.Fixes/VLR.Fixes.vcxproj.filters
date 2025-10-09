@@ -33,7 +33,7 @@
     <ClInclude Include="Logging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="version.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MemoryUtils.h">
@@ -43,6 +43,9 @@
       <Filter>External\Hooking.Patterns</Filter>
     </ClInclude>
     <ClInclude Include="FileHook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -66,6 +69,9 @@
       <Filter>External\Hooking.Patterns</Filter>
     </ClCompile>
     <ClCompile Include="FileHook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
