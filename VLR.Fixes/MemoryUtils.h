@@ -2,6 +2,13 @@
 
 #include "pch.h"
 
+#define RETURN_IF_PATTERN_NOT_FOUND(pattern) \
+if (pattern.size() != 1) \
+{ \
+  LOG(LOG_ERROR) << __FUNCTION__ << ": Failed to find memory address for pattern " << #pattern; \
+  return false; \
+}
+
 // Sets the protection of the given memory region while this object is in
 // scope. Resets the protection on destruction.
 class ScopedVirtualProtect {

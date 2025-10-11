@@ -6,6 +6,7 @@
 
 #include "Logging.h"
 #include "MemoryUtils.h"
+#include "resource.h"
 #include "..\External\Hooking.Patterns\Hooking.Patterns.h"
 
 namespace vlr {
@@ -19,84 +20,83 @@ lua_pcall_func lua_pcall = nullptr;
 lua_tolstring_func lua_tolstring = nullptr;
 void** LuaStatePtr = nullptr;
 
-static BYTE* jmpLoadTestScriptReturnAddr = nullptr;
-
-constexpr unsigned char kLuaTestCompiled[] = {
-        0x1b, 0x4c, 0x75, 0x61, 0x51, 0x0, 0x1, 0x4, 0x4, 0x4, 0x8, 0x0, 0x22, 0x0, 0x0, 0x0, 0x40, 0x73, 0x63, 0x72, 0x69,
-        0x70, 0x74, 0x73, 0x2e, 0x6d, 0x6f, 0x64, 0x2e, 0x6c, 0x75, 0x61, 0x64, 0x65, 0x63, 0x5c, 0x54, 0x45, 0x53, 0x54, 0x5c,
-        0x74, 0x65, 0x73, 0x74, 0x2e, 0x6c, 0x75, 0x61, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2,
-        0x2, 0x4, 0x0, 0x0, 0x0, 0x5, 0x0, 0x0, 0x0, 0x41, 0x40, 0x0, 0x0, 0x1e, 0x40, 0x0, 0x1, 0x20, 0x0, 0x80,
-        0x0, 0x2, 0x0, 0x0, 0x0, 0x4, 0x7, 0x0, 0x0, 0x0, 0x70, 0x72, 0x69, 0x6e, 0x74, 0x66, 0x0, 0x4, 0x32, 0x0,
-        0x0, 0x0, 0x56, 0x4c, 0x52, 0x2e, 0x46, 0x69, 0x78, 0x65, 0x73, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x4c, 0x6f, 0x61, 0x64,
-        0x65, 0x64, 0x20, 0x63, 0x6f, 0x6d, 0x70, 0x69, 0x6c, 0x65, 0x64, 0x20, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x20, 0x73,
-        0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x66, 0x75, 0x6c, 0x6c, 0x79, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x0, 0x0,
-        0x1, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-        0x0, 0x0, 0x0, 0x0,
-};
+static BYTE* jmpGameStartHookReturnAddr = nullptr;
 
 constexpr int kLuaOk = 0;
 
-void LoadTestScript()
+HMODULE GetCurrentModule()
 {
-    void* LuaState = *LuaStatePtr;
-    if (luaL_loadbuffer(LuaState, reinterpret_cast<const char*>(kLuaTestCompiled), sizeof(kLuaTestCompiled), /*name=*/nullptr) != kLuaOk)
+    HMODULE hModule = NULL;
+    GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)GetCurrentModule, &hModule);
+    return hModule;
+}
+
+void LoadSkipTransitionsScript()
+{
+    HMODULE module = GetCurrentModule();
+    const HRSRC lua_resource = ::FindResource(module, MAKEINTRESOURCE(IDR_LUA_SKIP), RT_RCDATA);
+    if (lua_resource == NULL)
     {
-        LOG(LOG_ERROR) << "Failed to load test script: " << lua_tolstring(LuaState, -1, /*len=*/nullptr);
+        LOG(LOG_ERROR) << "Failed to find Lua script resource. Error code: " << GetLastError();
+        return;
+    }
+    const DWORD lua_file_size = ::SizeofResource(module, lua_resource);
+    const HGLOBAL lua_resource_handle = ::LoadResource(module, lua_resource);
+    if (lua_resource_handle == NULL)
+    {
+        LOG(LOG_ERROR) << "Failed to load Lua script resource. Error code: " << GetLastError();
+        return;
+    }
+    const void* lua_file = ::LockResource(lua_resource_handle);
+    
+    void* LuaState = *LuaStatePtr;
+    if (luaL_loadbuffer(LuaState, reinterpret_cast<const char*>(lua_file), lua_file_size, /*name=*/nullptr) != kLuaOk)
+    {
+        LOG(LOG_ERROR) << "Failed to load Lua script: " << lua_tolstring(LuaState, -1, /*len=*/nullptr);
         return;
     }
     if (lua_pcall(LuaState, /*nargs=*/0, /*nresults=*/0, /*errfunc=*/0) != kLuaOk)
     {
-        LOG(LOG_ERROR) << "Failed to execute test script: " << lua_tolstring(LuaState, -1, /*len=*/nullptr);
+        LOG(LOG_ERROR) << "Failed to execute Lua script: " << lua_tolstring(LuaState, -1, /*len=*/nullptr);
         return;
     }
 }
 
-__declspec(naked) void __stdcall LoadTestScriptASM()
+// Runs at the beginning of GAME:start(), which is called by main() inside main.lua.
+__declspec(naked) void __stdcall GameStartHookASM()
 {
     __asm
     {
         push ecx
-        call LoadTestScript
+        call LoadSkipTransitionsScript
         pop ecx
         mov ebx, ecx
         mov [ebp - 0x24], ebx
-        jmp jmpLoadTestScriptReturnAddr
+        jmp jmpGameStartHookReturnAddr
     }
 }
 
 bool PatchCustomLuaScripts()
 {
     auto lua_state_pattern = hook::pattern("8B 85 E4 FE FF FF 85 C0 74 09 50");
-    if (lua_state_pattern.size() != 1)
-    {
-        LOG(LOG_ERROR) << __FUNCTION__ << ": Failed to find memory address for lua state";
-        return false;
-    }
+    RETURN_IF_PATTERN_NOT_FOUND(lua_state_pattern);
     BYTE* lua_state_addr = lua_state_pattern.count(1).get(0).get<BYTE>(0) + 0x1A;
     LuaStatePtr = (void**)(*(DWORD*)lua_state_addr);
     lua_pcall = (lua_pcall_func)(*(DWORD*)(lua_state_addr + 0x1B) + (DWORD)lua_state_addr + 0x1F);
     lua_tolstring = (lua_tolstring_func)(*(DWORD*)(lua_state_addr + 0x35) + (DWORD)lua_state_addr + 0x3F);
 
     auto lua_loadbuffer_pattern = hook::pattern("8A 01 41 84 C0 75 F9 68");
-    if (lua_loadbuffer_pattern.size() != 1)
-    {
-        LOG(LOG_ERROR) << __FUNCTION__ << ": Failed to find memory address for lua loadbuffer";
-        return false;
-    }
+    RETURN_IF_PATTERN_NOT_FOUND(lua_loadbuffer_pattern);
     BYTE* lua_loadbuffer_addr = lua_loadbuffer_pattern.count(1).get(0).get<BYTE>(0) + 0x18;
     luaL_loadbuffer = (luaL_loadbuffer_func)(*(DWORD*)(lua_loadbuffer_addr) + (DWORD)lua_loadbuffer_addr + 0x04);
 
-    auto load_test_script_pattern_new = hook::pattern("8B D9 89 5D DC 8B 0D");
-    if (load_test_script_pattern_new.size() != 1)
-    {
-        LOG(LOG_ERROR) << __FUNCTION__ << ": Failed to find memory address for test lua injection";
-        return false;
-    }
-    BYTE* load_test_script_inject_addr = load_test_script_pattern_new.count(1).get(0).get<BYTE>(0);
-    jmpLoadTestScriptReturnAddr = load_test_script_inject_addr + 0x05;
+    auto load_test_script_pattern = hook::pattern("8B D9 89 5D DC 8B 0D");
+    RETURN_IF_PATTERN_NOT_FOUND(load_test_script_pattern);
+    BYTE* load_test_script_inject_addr = load_test_script_pattern.count(1).get(0).get<BYTE>(0);
+    jmpGameStartHookReturnAddr = load_test_script_inject_addr + 0x05;
 
-    LOG(LOG_INFO) << "Patching test Lua script...";
-    WriteJmp(load_test_script_inject_addr, LoadTestScriptASM, 0x05);
+    LOG(LOG_INFO) << "Patching custom Lua script hook...";
+    WriteJmp(load_test_script_inject_addr, GameStartHookASM, 0x05);
     return true;
 }
 
