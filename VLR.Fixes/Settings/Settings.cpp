@@ -20,6 +20,7 @@ Settings::Settings()
     const std::string settings_path = std::filesystem::absolute(kSettingsFile).string();
 
     DisableLogging.Init(settings_path.c_str());
+    DebugPrintGameFilePaths.Init(settings_path.c_str());
 
     LipAnimationFix.Init(settings_path.c_str());
     SkippableTransitions.Init(settings_path.c_str());

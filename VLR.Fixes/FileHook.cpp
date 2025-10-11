@@ -19,6 +19,8 @@ static DWORD CopyStringFuncAddr = 0;
 static BYTE* jmpLoadGameFileReturnAddr1 = nullptr;
 static BYTE* jmpLoadGameFileReturnAddr2 = nullptr;
 
+static bool DebugPrintPath = false;
+
 struct PathString {
     const char* str = nullptr;
     DWORD reserved_size = 0;
@@ -57,7 +59,10 @@ bool LoadGameFile(char* filename, PathString* path_string_out)
         std::filesystem::path(kCustomFilesDir) /
         filename_path;
 
-    OutputDebugStringA(local_path.string().c_str());
+    if (DebugPrintPath)
+    {
+        OutputDebugStringA(local_path.string().c_str());
+    }
 
     if (!std::filesystem::exists(local_path))
     {
@@ -107,7 +112,7 @@ __declspec(naked) void __stdcall LoadGameFileASM()
 
 }  // namespace
 
-bool PatchCustomGameFiles()
+bool PatchCustomGameFiles(const Settings& settings)
 {
     auto load_game_file_pattern = hook::pattern("8B F9 FF 75 08 8D 4D E8");
     RETURN_IF_PATTERN_NOT_FOUND(load_game_file_pattern);
@@ -115,6 +120,8 @@ bool PatchCustomGameFiles()
     jmpLoadGameFileReturnAddr1 = load_game_file_inject_addr + 6;
     jmpLoadGameFileReturnAddr2 = load_game_file_inject_addr + 0x20;
     CopyStringFuncAddr = *(DWORD*)(load_game_file_inject_addr + 0x1C) + (DWORD)load_game_file_inject_addr + 0x20;
+
+    DebugPrintPath = settings.DebugPrintGameFilePaths.value;
 
     LOG(LOG_INFO) << "Patching game file hook...";
     WriteJmp(load_game_file_inject_addr, LoadGameFileASM, 6);

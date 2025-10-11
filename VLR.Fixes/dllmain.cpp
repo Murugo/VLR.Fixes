@@ -22,7 +22,7 @@ bool ApplyPatches(const Settings& settings)
     bool success = true;
     if (settings.CustomGameFiles)
     {
-        if (!vlr::PatchCustomGameFiles())
+        if (!vlr::PatchCustomGameFiles(settings))
         {
             LOG(LOG_ERROR) << "Failed to apply patch CustomGameFiles!";
         }

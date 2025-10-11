@@ -21,6 +21,7 @@ struct Settings
     Settings();
 
     IntSetting DisableLogging{ .section = "Core", .name = "DisableLogging", .default_value = 0 };
+    IntSetting DebugPrintGameFilePaths{ .section = "Core", .name = "DebugPrintGameFilePaths", .default_value = 0 };
 
     IntSetting LipAnimationFix{ .section = "Patches", .name = "LipAnimationFix", .default_value = 1 };
     IntSetting SkippableTransitions{ .section = "Patches", .name = "SkippableTransitions", .default_value = 1 };
