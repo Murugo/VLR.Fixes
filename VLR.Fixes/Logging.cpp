@@ -14,9 +14,6 @@ constexpr char kLogFilename[] = "VLR.Fixes.log.txt";
 FileLogger* FileLogger::instance_{ nullptr };
 std::mutex FileLogger::mutex_;
 
-FileLogger::FileLogger()
-    : fstream_(kLogFilename) {}
-
 FileLogger* FileLogger::Get()
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -31,12 +28,21 @@ void FileLogger::Write(const std::string& entry, LogSeverity severity)
 {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    fstream_ << "[ ";
+    if (!enabled_)
+    {
+        return;
+    }
+    if (!fstream_)
+    {
+        fstream_.reset(new std::ofstream(kLogFilename));
+    }
+
+    (*fstream_) << "[ ";
     switch (severity)
     {
-    case LOG_INFO: fstream_ << "I "; break;
-    case LOG_WARNING: fstream_ << "W "; break;
-    case LOG_ERROR: fstream_ << "E "; break;
+    case LOG_INFO: (*fstream_) << "I "; break;
+    case LOG_WARNING: (*fstream_) << "W "; break;
+    case LOG_ERROR: (*fstream_) << "E "; break;
     default: break;
     }
 
@@ -45,8 +51,13 @@ void FileLogger::Write(const std::string& entry, LogSeverity severity)
     char time_buf[50];
     snprintf(time_buf, sizeof(time_buf), "%02hu-%02hu-%02hu %02hu:%02hu:%02hu", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond);
 
-    fstream_ << time_buf << " ] " << entry << std::endl;
-    fstream_.flush();
+    (*fstream_) << time_buf << " ] " << entry << std::endl;
+    fstream_->flush();
+}
+
+void FileLogger::SetEnabled(bool enabled)
+{
+    enabled_ = enabled;
 }
 
 std::ostringstream& LogEntry::Get()

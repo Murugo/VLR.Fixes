@@ -19,6 +19,9 @@
     <Filter Include="External\Hooking.Patterns">
       <UniqueIdentifier>{09123411-e21a-45d5-a771-d58f4d002f94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Settings">
+      <UniqueIdentifier>{354b65a3-7261-4ac5-b45a-100bb7de65c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -48,6 +51,9 @@
     <ClInclude Include="LuaHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Settings\Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -74,10 +80,18 @@
     <ClCompile Include="LuaHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="VLR.Fixes.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Settings\Settings.ini">
+      <Filter>Settings</Filter>
+    </None>
   </ItemGroup>
 </Project>

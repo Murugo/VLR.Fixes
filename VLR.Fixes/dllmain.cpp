@@ -7,6 +7,7 @@
 #include "Logging.h"
 #include "LuaHook.h"
 #include "resource.h"
+#include "Settings\Settings.h"
 
 // Returns whether the current process is named "ze2.exe" (to avoid patching "ze1.exe" by mistake).
 bool ValidateExe()
@@ -16,21 +17,30 @@ bool ValidateExe()
     return std::filesystem::path(proc_path).filename().string() == "ze2.exe";
 }
 
-bool ApplyPatches()
+bool ApplyPatches(const Settings& settings)
 {
     bool success = true;
-    if (!vlr::PatchCustomGameFiles())
+    if (settings.CustomGameFiles)
     {
-        LOG(LOG_ERROR) << "Failed to apply game file hook!";
+        if (!vlr::PatchCustomGameFiles())
+        {
+            LOG(LOG_ERROR) << "Failed to apply patch CustomGameFiles!";
+        }
     }
-    if (!vlr::PatchCustomLuaScripts())
+    if (settings.SkippableTransitions)
     {
-        LOG(LOG_ERROR) << "Failed to apply Lua script hook!";
+        if (!vlr::PatchCustomLuaScripts())
+        {
+            LOG(LOG_ERROR) << "Failed to apply patch SkippableTransitions!";
+        }
     }
-    if (!vlr::PatchLipAnimationFix())
+    if (settings.LipAnimationFix)
     {
-        LOG(LOG_ERROR) << "Failed to apply lip animation fix!";
-        success = false;
+        if (!vlr::PatchLipAnimationFix())
+        {
+            LOG(LOG_ERROR) << "Failed to apply patch LipAnimationFix!";
+            success = false;
+        }
     }
     return success;
 }
@@ -39,9 +49,15 @@ void Init()
 {
     if (!ValidateExe()) return;
 
+    Settings settings;
+    if (settings.DisableLogging)
+    {
+        FileLogger::Get()->SetEnabled(false);
+    }
+
     LOG(LOG_INFO) << "Virtue's Last Reward Fixes " << VER_FILE_VERSION_STR;
 
-    if (ApplyPatches())
+    if (ApplyPatches(settings))
     {
         LOG(LOG_INFO) << "Applied all patches successfully.";
     }

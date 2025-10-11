@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <memory>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -19,17 +20,19 @@ class FileLogger {
 public:
     static FileLogger* Get();
     void Write(const std::string& entry, LogSeverity severity);
+    void SetEnabled(bool enabled);
 
     FileLogger(const FileLogger&) = delete;
     FileLogger& operator=(const FileLogger&) = delete;
 
 protected:
-    FileLogger();
+    FileLogger() = default;
 
 private:
     static std::mutex mutex_;
     static FileLogger* instance_;
-    std::ofstream fstream_;
+    std::unique_ptr<std::ofstream> fstream_;
+    bool enabled_ = true;
 };
 
 class LogEntry {
