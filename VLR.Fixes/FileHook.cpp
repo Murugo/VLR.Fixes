@@ -110,11 +110,7 @@ __declspec(naked) void __stdcall LoadGameFileASM()
 bool PatchCustomGameFiles()
 {
     auto load_game_file_pattern = hook::pattern("8B F9 FF 75 08 8D 4D E8");
-    if (load_game_file_pattern.size() != 1)
-    {
-        LOG(LOG_ERROR) << __FUNCTION__ << ": Failed to find memory address for loading game files";
-        return false;
-    }
+    RETURN_IF_PATTERN_NOT_FOUND(load_game_file_pattern);
     BYTE* load_game_file_inject_addr = load_game_file_pattern.count(1).get(0).get<BYTE>(0) + 0x02;
     jmpLoadGameFileReturnAddr1 = load_game_file_inject_addr + 6;
     jmpLoadGameFileReturnAddr2 = load_game_file_inject_addr + 0x20;

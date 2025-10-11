@@ -189,29 +189,17 @@ __declspec(naked) void __stdcall SkipMorphResetASM()
 bool PatchLipAnimationFix()
 {
     auto start_kf_pattern = hook::pattern("33 C9 33 FF 89 4D 9C");
-    if (start_kf_pattern.size() != 1)
-    {
-        LOG(LOG_ERROR) << __FUNCTION__ << ": Failed to find memory address for start keyframe insertion";
-        return false;
-    }
+    RETURN_IF_PATTERN_NOT_FOUND(start_kf_pattern);
+
     auto end_kf_pattern = hook::pattern("8B 8D 4C FF FF FF 83 EC 08");
-    if (end_kf_pattern.size() != 1)
-    {
-        LOG(LOG_ERROR) << __FUNCTION__ << ": Failed to find memory address for end keyframe insertion";
-        return false;
-    }
+    RETURN_IF_PATTERN_NOT_FOUND(end_kf_pattern);
+
     auto clamp_phoneme_pattern = hook::pattern("F3 0F 11 45 FC FF 77 08");
-    if (clamp_phoneme_pattern.size() != 1)
-    {
-        LOG(LOG_ERROR) << __FUNCTION__ << ": Failed to find memory address for phoneme start time fix";
-        return false;
-    }
+    RETURN_IF_PATTERN_NOT_FOUND(clamp_phoneme_pattern);
+
     auto skip_morph_reset_pattern = hook::pattern("8B 03 33 C9 89 4C 24 24");
-    if (skip_morph_reset_pattern.size() != 1)
-    {
-        LOG(LOG_ERROR) << __FUNCTION__ << ": Failed to find memory address for skip morph reset fix";
-        return false;
-    }
+    RETURN_IF_PATTERN_NOT_FOUND(skip_morph_reset_pattern);
+
     BYTE* start_kf_inject_addr = start_kf_pattern.count(1).get(0).get<BYTE>(0);
     BYTE* end_kf_inject_addr = end_kf_pattern.count(1).get(0).get<BYTE>(0);
     BYTE* clamp_phoneme_inject_addr = clamp_phoneme_pattern.count(1).get(0).get<BYTE>(0);
