@@ -18,6 +18,7 @@ constexpr char kCustomFilesDir[] = "VLR.Fixes";
 static DWORD CopyStringFuncAddr = 0;
 static BYTE* jmpLoadGameFileReturnAddr1 = nullptr;
 static BYTE* jmpLoadGameFileReturnAddr2 = nullptr;
+static BYTE* jmpFileExistsReturnAddr = nullptr;
 
 static bool DebugPrintPath = false;
 
@@ -110,6 +111,55 @@ __declspec(naked) void __stdcall LoadGameFileASM()
     }
 }
 
+// Returns true if the file can be found in the custom game files directory.
+bool CustomGameFileExists(char* filename)
+{
+    if (filename == nullptr) return false;
+
+    // Strip "../winfiles/" prefix from file path
+    const size_t winfiles_len = strlen(kWinfiles);
+    if (!strncmp(filename, kWinfiles, winfiles_len))
+    {
+        filename += winfiles_len;
+    }
+    const auto filename_path = std::filesystem::path(filename).make_preferred();
+    if (filename_path.is_absolute())
+    {
+        return false;
+    }
+    const auto local_path =
+        std::filesystem::current_path() /
+        std::filesystem::path(kCustomFilesDir) /
+        filename_path;
+
+    return std::filesystem::exists(local_path);
+}
+
+__declspec(naked) void __stdcall FileExistsASM()
+{
+    __asm
+    {
+        mov ebx, [ebp + 0x08]
+        push ecx
+        mov ebx, [ebx]
+        push ebx
+        call CustomGameFileExists
+        add esp, 0x04
+        pop ecx
+        test al, al
+        jz ExitASM
+        pop ebx
+        pop ebp
+        ret 0x04
+
+    ExitASM:
+        mov ebx, [ebp + 0x08]
+        push esi
+        push edi
+        jmp jmpFileExistsReturnAddr
+    }
+}
+
 }  // namespace
 
 bool PatchCustomGameFiles(const Settings& settings)
@@ -117,14 +167,20 @@ bool PatchCustomGameFiles(const Settings& settings)
     auto load_game_file_pattern = hook::pattern("8B F9 FF 75 08 8D 4D E8");
     RETURN_IF_PATTERN_NOT_FOUND(load_game_file_pattern);
     BYTE* load_game_file_inject_addr = load_game_file_pattern.count(1).get(0).get<BYTE>(0) + 0x02;
-    jmpLoadGameFileReturnAddr1 = load_game_file_inject_addr + 6;
+    jmpLoadGameFileReturnAddr1 = load_game_file_inject_addr + 0x06;
     jmpLoadGameFileReturnAddr2 = load_game_file_inject_addr + 0x20;
     CopyStringFuncAddr = *(DWORD*)(load_game_file_inject_addr + 0x1C) + (DWORD)load_game_file_inject_addr + 0x20;
+
+    auto file_exists_pattern = hook::pattern("8B 5D 08 56 57 8B F9 33 F6 39 77 40");
+    RETURN_IF_PATTERN_NOT_FOUND(file_exists_pattern);
+    BYTE* file_exists_inject_addr = file_exists_pattern.count(1).get(0).get<BYTE>(0);
+    jmpFileExistsReturnAddr = file_exists_inject_addr + 0x05;
 
     DebugPrintPath = settings.DebugPrintGameFilePaths.value;
 
     LOG(LOG_INFO) << "Patching game file hook...";
-    WriteJmp(load_game_file_inject_addr, LoadGameFileASM, 6);
+    WriteJmp(load_game_file_inject_addr, LoadGameFileASM, 0x06);
+    WriteJmp(file_exists_inject_addr, FileExistsASM, 0x05);
     return true;
 }
 
