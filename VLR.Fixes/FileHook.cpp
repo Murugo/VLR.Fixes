@@ -40,25 +40,32 @@ void CopyString(PathString* dst, PathString* src)
     }
 }
 
-bool LoadGameFile(char* filename, PathString* path_string_out)
+std::filesystem::path GetNormalizedPath(char* filename)
 {
-    if (filename == nullptr) return false;
-
     // Strip "../winfiles/" prefix from file path
     const size_t winfiles_len = strlen(kWinfiles);
     if (!strncmp(filename, kWinfiles, winfiles_len))
     {
         filename += winfiles_len;
     }
-    const auto filename_path = std::filesystem::path(filename).make_preferred();
+    return std::filesystem::path(filename).make_preferred();
+}
+
+std::filesystem::path GetAbsoluteLocalPath(const std::filesystem::path& filename_path)
+{
+    return std::filesystem::current_path() / std::filesystem::path(kCustomFilesDir) / filename_path;
+}
+
+bool LoadGameFile(char* filename, PathString* path_string_out)
+{
+    if (filename == nullptr) return false;
+
+    const auto filename_path = GetNormalizedPath(filename);
     if (filename_path.is_absolute())
     {
         return false;
     }
-    const auto local_path =
-        std::filesystem::current_path() /
-        std::filesystem::path(kCustomFilesDir) /
-        filename_path;
+    const auto local_path = GetAbsoluteLocalPath(filename_path);
 
     if (DebugPrintPath)
     {
@@ -116,22 +123,12 @@ bool CustomGameFileExists(char* filename)
 {
     if (filename == nullptr) return false;
 
-    // Strip "../winfiles/" prefix from file path
-    const size_t winfiles_len = strlen(kWinfiles);
-    if (!strncmp(filename, kWinfiles, winfiles_len))
-    {
-        filename += winfiles_len;
-    }
-    const auto filename_path = std::filesystem::path(filename).make_preferred();
+    const auto filename_path = GetNormalizedPath(filename);
     if (filename_path.is_absolute())
     {
         return false;
     }
-    const auto local_path =
-        std::filesystem::current_path() /
-        std::filesystem::path(kCustomFilesDir) /
-        filename_path;
-
+    const auto local_path = GetAbsoluteLocalPath(filename_path);
     return std::filesystem::exists(local_path);
 }
 
