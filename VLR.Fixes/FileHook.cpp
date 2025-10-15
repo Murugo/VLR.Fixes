@@ -61,7 +61,7 @@ bool LoadGameFile(char* filename, PathString* path_string_out)
     if (filename == nullptr) return false;
 
     const auto filename_path = GetNormalizedPath(filename);
-    if (filename_path.is_absolute())
+    if (filename_path.empty() || filename_path.is_absolute())
     {
         return false;
     }
@@ -124,7 +124,7 @@ bool CustomGameFileExists(char* filename)
     if (filename == nullptr) return false;
 
     const auto filename_path = GetNormalizedPath(filename);
-    if (filename_path.is_absolute())
+    if (filename_path.empty() || filename_path.is_absolute())
     {
         return false;
     }
