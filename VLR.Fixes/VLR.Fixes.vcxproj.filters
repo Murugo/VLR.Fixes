@@ -22,6 +22,12 @@
     <Filter Include="Settings">
       <UniqueIdentifier>{354b65a3-7261-4ac5-b45a-100bb7de65c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Utils">
+      <UniqueIdentifier>{ad47e282-390b-453d-a0d2-4c479263ec17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{d507e790-bdb6-4f41-b409-bbf1ef28abde}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -54,6 +60,12 @@
     <ClInclude Include="Settings\Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\BloomFilter.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\MurmurHash3.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -82,6 +94,12 @@
     </ClCompile>
     <ClCompile Include="Settings\Settings.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\MurmurHash3.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\BloomFilter.cpp">
+      <Filter>Source Files\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

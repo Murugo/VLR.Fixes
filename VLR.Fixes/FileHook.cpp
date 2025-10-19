@@ -2,10 +2,15 @@
 
 #include "FileHook.h"
 
+#include <algorithm>
 #include <filesystem>
+#include <memory>
+#include <mutex>
+#include <cctype>
 
 #include "Logging.h"
 #include "MemoryUtils.h"
+#include "Utils\BloomFilter.h"
 #include "..\External\Hooking.Patterns\Hooking.Patterns.h"
 
 namespace vlr {
@@ -19,8 +24,11 @@ static DWORD CopyStringFuncAddr = 0;
 static BYTE* jmpLoadGameFileReturnAddr1 = nullptr;
 static BYTE* jmpLoadGameFileReturnAddr2 = nullptr;
 static BYTE* jmpFileExistsReturnAddr = nullptr;
+static BYTE* jmpRebuildFilterReturnAddr = nullptr;
 
 static bool DebugPrintPath = false;
+static std::unique_ptr<BloomFilter> path_bloom_filter;
+static std::mutex mutex;
 
 struct PathString {
     const char* str = nullptr;
@@ -58,6 +66,7 @@ std::filesystem::path GetAbsoluteLocalPath(const std::filesystem::path& filename
 
 bool LoadGameFile(char* filename, PathString* path_string_out)
 {
+    std::scoped_lock lock(mutex);
     if (filename == nullptr) return false;
 
     const auto filename_path = GetNormalizedPath(filename);
@@ -66,13 +75,11 @@ bool LoadGameFile(char* filename, PathString* path_string_out)
         return false;
     }
     const auto local_path = GetAbsoluteLocalPath(filename_path);
-
     if (DebugPrintPath)
     {
         OutputDebugStringA(local_path.string().c_str());
     }
-
-    if (!std::filesystem::exists(local_path))
+    if (!path_bloom_filter || !path_bloom_filter->Exists(filename_path) || !std::filesystem::exists(local_path))
     {
         return false;
     }
@@ -121,10 +128,12 @@ __declspec(naked) void __stdcall LoadGameFileASM()
 // Returns true if the file can be found in the custom game files directory.
 bool CustomGameFileExists(char* filename)
 {
-    if (filename == nullptr) return false;
+    std::scoped_lock lock(mutex);
+
+    if (filename == nullptr || !path_bloom_filter) return false;
 
     const auto filename_path = GetNormalizedPath(filename);
-    if (filename_path.empty() || filename_path.is_absolute())
+    if (filename_path.empty() || filename_path.is_absolute() || !path_bloom_filter->Exists(filename_path))
     {
         return false;
     }
@@ -157,6 +166,55 @@ __declspec(naked) void __stdcall FileExistsASM()
     }
 }
 
+void RebuildPathBloomFilter()
+{
+    std::scoped_lock lock(mutex);
+
+    std::filesystem::path custom_files_dir = std::filesystem::path(kCustomFilesDir);
+    if (!std::filesystem::exists(custom_files_dir))
+    {
+        path_bloom_filter.reset(nullptr);
+        return;
+    }
+
+    // LOG(LOG_INFO) << "Rebuilding custom game files index...";
+    int file_count = 0;
+    for (const auto& file_entry : std::filesystem::recursive_directory_iterator(custom_files_dir))
+    {
+        if (!file_entry.is_regular_file()) continue;
+        const auto relative_path = std::filesystem::relative(file_entry.path(), custom_files_dir);
+        file_count++;
+    }
+    // LOG(LOG_INFO) << "Found " << file_count << " custom game files.";
+    if (file_count == 0)
+    {
+        path_bloom_filter.reset(nullptr);
+        return;
+    }
+
+    path_bloom_filter.reset(new BloomFilter(file_count, 0.02));
+    for (const auto& file_entry : std::filesystem::recursive_directory_iterator(custom_files_dir))
+    {
+        if (!file_entry.is_regular_file()) continue;
+        const auto relative_path = std::filesystem::relative(file_entry.path(), custom_files_dir);
+        path_bloom_filter->Insert(relative_path);
+    }
+}
+
+// Rebuilds the custom game file filter inside the Lua call to GAME:start().
+__declspec(naked) void __stdcall RebuildFilterASM()
+{
+    __asm
+    {
+        push eax
+        call RebuildPathBloomFilter
+        pop eax
+        mov esi, eax
+        add esp, 0x14
+        jmp jmpRebuildFilterReturnAddr
+    }
+}
+
 }  // namespace
 
 bool PatchCustomGameFiles(const Settings& settings)
@@ -173,11 +231,18 @@ bool PatchCustomGameFiles(const Settings& settings)
     BYTE* file_exists_inject_addr = file_exists_pattern.count(1).get(0).get<BYTE>(0);
     jmpFileExistsReturnAddr = file_exists_inject_addr + 0x05;
 
+    auto rebuild_filter_pattern = hook::pattern("8B F0 83 C4 14 89 75 EC");
+    RETURN_IF_PATTERN_NOT_FOUND(rebuild_filter_pattern);
+    BYTE* rebuild_filter_inject_addr = rebuild_filter_pattern.count(1).get(0).get<BYTE>(0);
+    jmpRebuildFilterReturnAddr = rebuild_filter_inject_addr + 0x05;
+
     DebugPrintPath = settings.DebugPrintGameFilePaths.value;
 
     LOG(LOG_INFO) << "Patching game file hook...";
     WriteJmp(load_game_file_inject_addr, LoadGameFileASM, 0x06);
     WriteJmp(file_exists_inject_addr, FileExistsASM, 0x05);
+    WriteJmp(rebuild_filter_inject_addr, RebuildFilterASM, 0x05);
+    RebuildPathBloomFilter();
     return true;
 }
 
