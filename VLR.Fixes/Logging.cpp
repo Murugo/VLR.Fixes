@@ -16,7 +16,7 @@ std::mutex FileLogger::mutex_;
 
 FileLogger* FileLogger::Get()
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::scoped_lock lock(mutex_);
     if (instance_ == nullptr)
     {
         instance_ = new FileLogger();
@@ -26,7 +26,7 @@ FileLogger* FileLogger::Get()
 
 void FileLogger::Write(const std::string& entry, LogSeverity severity)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::scoped_lock lock(mutex_);
 
     if (!enabled_)
     {
