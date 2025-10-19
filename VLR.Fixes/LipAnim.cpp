@@ -17,6 +17,7 @@ static BYTE* jmpUpdateEndKeyframesReturnAddr = nullptr;
 static BYTE* jmpClampPhonemeStartTimeReturnAddr = nullptr;
 static BYTE* jmpSkipMorphResetReturnAddr1 = nullptr;
 static BYTE* jmpSkipMorphResetReturnAddr2 = nullptr;
+static BYTE* jmpUpdateEscapeKeyframesReturnAddr = nullptr;
 
 struct KeyframeList
 {
@@ -184,6 +185,40 @@ __declspec(naked) void __stdcall SkipMorphResetASM()
     }
 }
 
+// Fades in and out the default morph target animation for dialogue during escape sequences.
+void UpdateEscapeKeyframes(DWORD* morph_anim)
+{
+    if (morph_anim == nullptr) return;
+
+    KeyframeList* time_list = (KeyframeList*)morph_anim;
+    time_list->values[1] = 0.2f;
+
+    KeyframeList* value_list = (KeyframeList*)(morph_anim + 5);
+    value_list->values[0] = 0.0f;
+
+    float end_time = 0.4f;
+    InsertValueAt(time_list, &end_time, time_list->size);
+
+    float end_value = 0.0f;
+    InsertValueAt(value_list, &end_value, value_list->size);
+
+    float unk = 0.0f;
+    KeyframeList* unk_list = (KeyframeList*)(morph_anim + 20);
+    InsertValueAt(unk_list, &unk, unk_list->size);
+}
+
+__declspec(naked) void __stdcall UpdateEscapeKeyframesASM()
+{
+    __asm
+    {
+        push dword ptr ds : [ebp - 0x64]
+        call UpdateEscapeKeyframes
+
+        mov ecx, [ebp - 0x8C]
+        jmp jmpUpdateEscapeKeyframesReturnAddr
+    }
+}
+
 }  // namespace
 
 bool PatchLipAnimationFix()
@@ -200,22 +235,28 @@ bool PatchLipAnimationFix()
     auto skip_morph_reset_pattern = hook::pattern("8B 03 33 C9 89 4C 24 24");
     RETURN_IF_PATTERN_NOT_FOUND(skip_morph_reset_pattern);
 
+    auto escape_kf_pattern = hook::pattern("8B 8D 74 FF FF FF 83 EC 08");
+    RETURN_IF_PATTERN_NOT_FOUND(escape_kf_pattern);
+
     BYTE* start_kf_inject_addr = start_kf_pattern.count(1).get(0).get<BYTE>(0);
     BYTE* end_kf_inject_addr = end_kf_pattern.count(1).get(0).get<BYTE>(0);
     BYTE* clamp_phoneme_inject_addr = clamp_phoneme_pattern.count(1).get(0).get<BYTE>(0);
-    BYTE* skip_morph_reset_addr = skip_morph_reset_pattern.count(1).get(0).get<BYTE>(0);
+    BYTE* skip_morph_reset_inject_addr = skip_morph_reset_pattern.count(1).get(0).get<BYTE>(0);
+    BYTE* escape_kf_inject_addr = escape_kf_pattern.count(1).get(0).get<BYTE>(0);
     VlrInsertValueAt = (VlrInsertValueAtFunc)(*(DWORD*)(end_kf_inject_addr - 0x19) + end_kf_inject_addr - 0x15);
-    jmpUpdateStartKeyframesReturnAddr = start_kf_inject_addr + 7;
-    jmpUpdateEndKeyframesReturnAddr = end_kf_inject_addr + 6;
-    jmpClampPhonemeStartTimeReturnAddr = clamp_phoneme_inject_addr + 5;
-    jmpSkipMorphResetReturnAddr1 = skip_morph_reset_addr + 8;
-    jmpSkipMorphResetReturnAddr2 = skip_morph_reset_addr + 0xDB;
+    jmpUpdateStartKeyframesReturnAddr = start_kf_inject_addr + 0x07;
+    jmpUpdateEndKeyframesReturnAddr = end_kf_inject_addr + 0x06;
+    jmpClampPhonemeStartTimeReturnAddr = clamp_phoneme_inject_addr + 0x05;
+    jmpSkipMorphResetReturnAddr1 = skip_morph_reset_inject_addr + 0x08;
+    jmpSkipMorphResetReturnAddr2 = skip_morph_reset_inject_addr + 0xDB;
+    jmpUpdateEscapeKeyframesReturnAddr = escape_kf_inject_addr + 0x06;
 
     LOG(LOG_INFO) << "Patching lip animation fix...";
-    WriteJmp(start_kf_inject_addr, UpdateLipStartKeyframesASM, 7);
-    WriteJmp(end_kf_inject_addr, UpdateLipEndKeyframesASM, 6);
-    WriteJmp(clamp_phoneme_inject_addr, ClampPhonemeStartTimeASM, 5);
-    WriteJmp(skip_morph_reset_addr, SkipMorphResetASM, 8);
+    WriteJmp(start_kf_inject_addr, UpdateLipStartKeyframesASM, 0x07);
+    WriteJmp(end_kf_inject_addr, UpdateLipEndKeyframesASM, 0x06);
+    WriteJmp(clamp_phoneme_inject_addr, ClampPhonemeStartTimeASM, 0x05);
+    WriteJmp(skip_morph_reset_inject_addr, SkipMorphResetASM, 0x08);
+    WriteJmp(escape_kf_inject_addr, UpdateEscapeKeyframesASM, 0x06);
     return true;
 }
 
