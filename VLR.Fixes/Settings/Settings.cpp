@@ -22,6 +22,7 @@ Settings::Settings()
     DisableLogging.Init(settings_path.c_str());
     DebugPrintGameFilePaths.Init(settings_path.c_str());
 
+    DisablePauseInBackground.Init(settings_path.c_str());
     LipAnimationFix.Init(settings_path.c_str());
     SkippableTransitions.Init(settings_path.c_str());
     CustomGameFiles.Init(settings_path.c_str());

@@ -8,6 +8,7 @@
 #include "LuaHook.h"
 #include "resource.h"
 #include "Settings\Settings.h"
+#include "WindowState.h"
 
 // Returns whether the current process is named "ze2.exe" (to avoid patching "ze1.exe" by mistake).
 bool ValidateExe()
@@ -25,6 +26,7 @@ bool ApplyPatches(const Settings& settings)
         if (!vlr::PatchCustomGameFiles(settings))
         {
             LOG(LOG_ERROR) << "Failed to apply patch CustomGameFiles!";
+            success = false;
         }
     }
     if (settings.SkippableTransitions)
@@ -32,6 +34,7 @@ bool ApplyPatches(const Settings& settings)
         if (!vlr::PatchCustomLuaScripts())
         {
             LOG(LOG_ERROR) << "Failed to apply patch SkippableTransitions!";
+            success = false;
         }
     }
     if (settings.LipAnimationFix)
@@ -39,6 +42,14 @@ bool ApplyPatches(const Settings& settings)
         if (!vlr::PatchLipAnimationFix())
         {
             LOG(LOG_ERROR) << "Failed to apply patch LipAnimationFix!";
+            success = false;
+        }
+    }
+    if (settings.DisablePauseInBackground)
+    {
+        if (!vlr::PatchDisablePauseInBackground())
+        {
+            LOG(LOG_ERROR) << "Failed to apply DisablePauseInBackground!";
             success = false;
         }
     }

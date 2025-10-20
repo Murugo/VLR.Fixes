@@ -99,6 +99,7 @@
     <ClInclude Include="Settings\Settings.h" />
     <ClInclude Include="Utils\BloomFilter.h" />
     <ClInclude Include="Utils\MurmurHash3.h" />
+    <ClInclude Include="WindowState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\External\Hooking.Patterns\Hooking.Patterns.cpp">
@@ -123,6 +124,7 @@
     <ClCompile Include="Utils\MurmurHash3.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="WindowState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="VLR.Fixes.rc" />

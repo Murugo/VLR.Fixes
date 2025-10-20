@@ -57,14 +57,17 @@
     <ClInclude Include="LuaHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Settings\Settings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\BloomFilter.h">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\MurmurHash3.h">
       <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\Settings.h">
+      <Filter>Settings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -92,14 +95,17 @@
     <ClCompile Include="LuaHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Settings\Settings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\MurmurHash3.cpp">
       <Filter>Source Files\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Utils\BloomFilter.cpp">
       <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\Settings.cpp">
+      <Filter>Settings</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
