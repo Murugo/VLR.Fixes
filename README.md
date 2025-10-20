@@ -10,7 +10,9 @@ An unofficial patch for the [Steam release](https://store.steampowered.com/app/4
 
 * *Skippable Transitions*: Skip map transitions, room titles, or the opening splash screen with the A button.
 
-* *Custom Game Files*: Load uncompressed game files from a local directory if they exist instead of from ze2_data_en_us.bin.
+* *Disable Background Pausing*: While in windowed or borderless mode, prevents the game from pausing while the window is not in focus.
+
+* *Custom Game Files*: Loads uncompressed game files from a local directory instead of ze2_data_en_us.bin.
 
 ## Installation
 
@@ -37,7 +39,7 @@ You can use a tool such as [DebugView](https://learn.microsoft.com/en-us/sysinte
 
 > **Note**: .AVI files are currently unsupported.
 
-> **Note**: This feature may cause some slow-down due to frequent disk accesses. Installing the game on an SSD can help mitigate this issue. To disable the feature, set `CustomGameFiles = 0` in `VLR.Fixes.ini`.
+> **Note**: This feature may cause some slow-down due to slightly more disk accesses. Installing the game on an SSD can help mitigate this issue. To disable the feature, set `CustomGameFiles = 0` in `VLR.Fixes.ini`.
 
 ## Credits
 
