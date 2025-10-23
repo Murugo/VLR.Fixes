@@ -60,6 +60,7 @@ void LoadSkipTransitionsScript()
         LOG(LOG_ERROR) << "Failed to execute Lua script: " << lua_tolstring(LuaState, -1, /*len=*/nullptr);
         return;
     }
+    // LOG(LOG_INFO) << "Successfully ran Lua script: SkippableTransitions.luac";
 }
 
 // Runs at the beginning of GAME:start(), which is called by main() inside main.lua.
@@ -90,13 +91,13 @@ bool PatchCustomLuaScripts()
     BYTE* lua_loadbuffer_addr = lua_loadbuffer_pattern.count(1).get(0).get<BYTE>(0) + 0x18;
     luaL_loadbuffer = (luaL_loadbuffer_func)(*(DWORD*)(lua_loadbuffer_addr) + (DWORD)lua_loadbuffer_addr + 0x04);
 
-    auto load_test_script_pattern = hook::pattern("8B D9 89 5D DC 8B 0D");
-    RETURN_IF_PATTERN_NOT_FOUND(load_test_script_pattern);
-    BYTE* load_test_script_inject_addr = load_test_script_pattern.count(1).get(0).get<BYTE>(0);
-    jmpGameStartHookReturnAddr = load_test_script_inject_addr + 0x05;
+    auto load_script_pattern = hook::pattern("8B D9 89 5D DC 8B 0D");
+    RETURN_IF_PATTERN_NOT_FOUND(load_script_pattern);
+    BYTE* load_script_inject_addr = load_script_pattern.count(1).get(0).get<BYTE>(0);
+    jmpGameStartHookReturnAddr = load_script_inject_addr + 0x05;
 
     LOG(LOG_INFO) << "Patching custom Lua script hook...";
-    WriteJmp(load_test_script_inject_addr, GameStartHookASM, 0x05);
+    WriteJmp(load_script_inject_addr, GameStartHookASM, 0x05);
     return true;
 }
 

@@ -85,6 +85,9 @@
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)\Settings\Settings.ini" "$(OutDir)\VLR.Fixes.ini"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>"$(ProjectDir)\Lua\luac.exe" -o "$(ProjectDir)\Lua\SkippableTransitions.luac" "$(ProjectDir)\Lua\SkippableTransitions.lua"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\External\Hooking.Patterns\Hooking.Patterns.h" />
@@ -130,6 +133,7 @@
     <ResourceCompile Include="VLR.Fixes.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Lua\SkippableTransitions.lua" />
     <None Include="Settings\Settings.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

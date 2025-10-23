@@ -3,3 +3,4 @@ Debug/
 Deploy/
 Release/
 *.aps
+*.luac

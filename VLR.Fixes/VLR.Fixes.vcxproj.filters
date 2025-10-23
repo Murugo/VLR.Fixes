@@ -28,6 +28,9 @@
     <Filter Include="Source Files\Utils">
       <UniqueIdentifier>{d507e790-bdb6-4f41-b409-bbf1ef28abde}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Lua Scripts">
+      <UniqueIdentifier>{080f1f90-6755-4b75-9b9d-7b1662f677a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -116,6 +119,9 @@
   <ItemGroup>
     <None Include="Settings\Settings.ini">
       <Filter>Settings</Filter>
+    </None>
+    <None Include="Lua\SkippableTransitions.lua">
+      <Filter>Lua Scripts</Filter>
     </None>
   </ItemGroup>
 </Project>
