@@ -5,6 +5,8 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VLR.Fixes", "VLR.Fixes\VLR.Fixes.vcxproj", "{C152ECD1-36BC-48B7-925B-F657FA975546}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VLR.Extractor", "Tools\VLR.Extractor\VLR.Extractor.vcxproj", "{399ADAE8-81BD-459C-BF34-7F673233F742}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -15,6 +17,10 @@ Global
 		{C152ECD1-36BC-48B7-925B-F657FA975546}.Debug|x86.Build.0 = Debug|Win32
 		{C152ECD1-36BC-48B7-925B-F657FA975546}.Release|x86.ActiveCfg = Release|Win32
 		{C152ECD1-36BC-48B7-925B-F657FA975546}.Release|x86.Build.0 = Release|Win32
+		{399ADAE8-81BD-459C-BF34-7F673233F742}.Debug|x86.ActiveCfg = Debug|Win32
+		{399ADAE8-81BD-459C-BF34-7F673233F742}.Debug|x86.Build.0 = Debug|Win32
+		{399ADAE8-81BD-459C-BF34-7F673233F742}.Release|x86.ActiveCfg = Release|Win32
+		{399ADAE8-81BD-459C-BF34-7F673233F742}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

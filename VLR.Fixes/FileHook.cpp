@@ -77,7 +77,10 @@ bool LoadGameFile(char* filename, PathString* path_string_out)
     const auto local_path = GetAbsoluteLocalPath(filename_path);
     if (DebugPrintPath)
     {
-        OutputDebugStringA(local_path.string().c_str());
+        std::string debug_path(filename);
+        debug_path = ">>> " + debug_path;
+        OutputDebugStringA(debug_path.c_str());
+        // OutputDebugStringA(local_path.string().c_str());
     }
     if (!path_bloom_filter || !path_bloom_filter->Exists(filename_path) || !std::filesystem::exists(local_path))
     {
