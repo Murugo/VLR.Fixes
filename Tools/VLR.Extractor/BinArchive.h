@@ -11,9 +11,10 @@ public:
     ~BinArchive();
 
     bool Open(const std::string& bin_path, const std::string& hashlist_csv_path);
-    bool ExtractTo(const std::string& output_path);
+    bool ExtractTo(const std::string& output_path, bool overwrite = false);
 
-    int GetFileCount() { return files_.size(); }
+    int GetFilesExtractedCount() { return files_extracted_; }
+    int GetFilesSkippedCount() { return files_skipped_; }
 
 private:
     struct BinHeader
@@ -78,4 +79,6 @@ private:
     std::vector<DirectoryEntry> dirs_;
     std::vector<FileEntry> files_;
     uint32_t data_offset_ = 0;
+    int files_extracted_ = 0;
+    int files_skipped_ = 0;
 };
