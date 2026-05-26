@@ -24,7 +24,7 @@ BinArchive::~BinArchive()
 
 bool BinArchive::Open(const std::string& bin_path, const std::string& hashlist_csv_path)
 {
-    if (!ParseHashList(hashlist_csv_path))
+    if (!hashlist_csv_path.empty() && !ParseHashList(hashlist_csv_path))
     {
         return false;
     }
