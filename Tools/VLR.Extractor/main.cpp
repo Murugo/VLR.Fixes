@@ -89,6 +89,7 @@ struct Options
     std::string output_path;
     std::string hashlist_path;
     bool overwrite = false;
+    bool skip_unmatched = false;
 };
 
 bool ParseArgs(int argc, char** argv, Options& options)
@@ -118,6 +119,11 @@ bool ParseArgs(int argc, char** argv, Options& options)
         else if (arg == "--overwrite")
         {
             options.overwrite = true;
+            i++;
+        }
+        else if (arg == "--skip_unmatched")
+        {
+            options.skip_unmatched = true;
             i++;
         }
         else
@@ -158,7 +164,7 @@ int main(int argc, char** argv)
 
     BinArchive bin_archive;
     if (!bin_archive.Open(options.bin_path, options.hashlist_path) ||
-        !bin_archive.ExtractTo(options.output_path, options.overwrite))
+        !bin_archive.ExtractTo(options.output_path, options.overwrite, options.skip_unmatched))
     {
         return 1;
     }

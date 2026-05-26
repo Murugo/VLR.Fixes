@@ -113,13 +113,17 @@ bool BinArchive::ReadFileEntries(const char* data, uint32_t offs)
     return true;
 }
 
-bool BinArchive::ExtractTo(const std::string& output_path, bool overwrite)
+bool BinArchive::ExtractTo(const std::string& output_path, bool overwrite, bool skip_unmatched)
 {
     // Create all directories
     std::vector<std::string> dir_paths;
     dir_paths.reserve(dirs_.size());
     for (size_t i = 0; i < dirs_.size(); ++i)
     {
+        if (skip_unmatched && !dir_index_to_filepath_.contains(i))
+        {
+            continue;
+        }
         const std::string dir_path = GetDirectoryPath(i, output_path);
         // std::cout << "Creating directory: " << dir_path << std::endl;
         std::filesystem::create_directories(dir_path);
@@ -129,6 +133,10 @@ bool BinArchive::ExtractTo(const std::string& output_path, bool overwrite)
     // Extract all files
     for (const FileEntry& entry : files_)
     {
+        if (skip_unmatched && !hash_to_filepath_.contains(entry.hash))
+        {
+            continue;
+        }
         const std::string file_path = GetFilePath(entry, output_path);
         if (!overwrite && std::filesystem::exists(file_path))
         {

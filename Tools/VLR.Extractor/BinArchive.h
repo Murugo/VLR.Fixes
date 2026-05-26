@@ -11,7 +11,7 @@ public:
     ~BinArchive();
 
     bool Open(const std::string& bin_path, const std::string& hashlist_csv_path);
-    bool ExtractTo(const std::string& output_path, bool overwrite = false);
+    bool ExtractTo(const std::string& output_path, bool overwrite = false, bool skip_unmatched = false);
 
     int GetFilesExtractedCount() { return files_extracted_; }
     int GetFilesSkippedCount() { return files_skipped_; }
